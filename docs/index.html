@@ -344,6 +344,7 @@ table.data td.wrap{white-space:normal;min-width:160px}
 
 <div class="toast" id="toast"></div>
 
+<script src="./demo-data.js"></script>
 <script>
 (function(){
 "use strict";
@@ -371,7 +372,22 @@ async function boot(){
   var db = await (window.claude && window.claude.use ? window.claude.use('db') : Promise.resolve(null));
   S.db = db;
   var dot = document.getElementById('connDot'), txt = document.getElementById('connText');
-  if(!db){ dot.classList.remove('on'); txt.textContent='لا يمكن الاتصال بقاعدة البيانات في هذا العرض'; renderAll(); return; }
+  if(!db){
+    dot.classList.remove('on');
+    txt.textContent='وضع العرض — بيانات آخر أسبوعين محمّلة';
+    if(window.MOQATIL_DEMO_DATA){
+      S.projects = window.MOQATIL_DEMO_DATA.projects || [];
+      S.batches = [{
+        id:'import-2026-10-08',
+        label:'بيانات فعلية مستوردة — 25/09/2026 إلى 08/10/2026',
+        rows:(window.MOQATIL_DEMO_DATA.rows||[]).map(function(a){
+          return {date:a[0],project_id:a[1],type:a[2],cost_item:a[3],party:a[4],desc:a[5],amount:a[6],source:'استيراد من شيتات الشركة'};
+        })
+      }];
+    }
+    renderAll();
+    return;
+  }
   dot.classList.add('on'); txt.textContent='متصل';
   try{
     var cfgSnap = await db.doc('meta/config').get();
